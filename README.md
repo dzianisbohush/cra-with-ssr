@@ -104,7 +104,8 @@ $ cd cra-with-ssr
 $ npm start
 ```
 Go to stat page in the browser. If we go to page source, we can see that html is almost empty, CRA has only links to scripts. Our goal is getting rendered page from page. 
-Go to the project. Lets change some structure. Add server folder. The folder will contain entry point for server bundle. Add common folder. the folder will contain common components for client and server bundle.
+Go to the project. 
+Lets change some structure. Add server folder. The folder will contain entry point for server bundle. Add common folder. the folder will contain common components for client and server bundle.
 
 ```
 .
@@ -127,7 +128,7 @@ import App from './common/App';
 
 ReactDOM.hydrate(<App />, document.getElementById('root'));
 ````
-Let`s go to configure server.
+Let`s go to configure server. Install Express:
 ```bash
 $ npm install express
 ```
@@ -258,6 +259,7 @@ Our project structure now is:
 ```
 .
 ├── build
+│   └── ...
 ├── build-server
 │   └── bundle.js
 ├── package.json
@@ -277,7 +279,7 @@ Our project structure now is:
     └── server
         └── index.js
 ```
-Go to [localhost:3000](localhost:3000).
+Go to [localhost:3000](localhost:3000)
 In page source we can see rendered html inside div with id equal root.
 ```html
 <!doctype html>
