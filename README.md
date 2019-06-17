@@ -235,24 +235,24 @@ const config = {
 module.exports = config;
  ```
 This config says that entry point is ./src/server/index.js, output is ./build-server directory with ./build-server/bundle.js server bundle.
-Next we should add commands for build and start server.
+Next we should add commands for start server.
 ```json
 {
-    "scripts": {
+     "scripts": {
         "start": "react-scripts start",
-        "build-server": "NODE_ENV=development webpack --config webpack.server.js --mode=development -w",
-        "start-server": "nodemon ./build-server/bundle.js",
+        "start-server": "npm run clean-build-folders && npm run build && npm run build-server && npm run run-server",
+        "build-server": "NODE_ENV=development webpack --config webpack.server.js --mode=development",
+        "run-server": "nodemon ./build-server/bundle.js",
+        "clean-build-folders": "rm -rf ./build/ && rm -rf ./build-server/",
         "build": "react-scripts build",
         "test": "react-scripts test",
         "eject": "react-scripts eject"
-      }
-}
+     }
+ }
 ```
 Run in terminal:
 ```bash
-$ npm run build #for building client bundle
-$ npm run build-server #for building server bundle
-$ npm run start-server #for starting server
+$ npm run start-server
 ```
 After these commands, we should see `Server is listening on port 3000`.
 Our project structure now is:
@@ -311,3 +311,147 @@ In page source we can see rendered html inside div with id equal root.
 </html>
 ```
 Let`s go to code splitting.
+
+## Code splitting.
+![A single giant bundle vs multiple smaller bundles](http://thejameskyle.com/img/react-loadable-split-bundles.png)
+
+Code splitting is a technique which allow create some count of little chunks instead of single huge bundle. CRA has code splitting by default. When we run `$ npm run build` we can see in ./build/static/js/ folder some count of chunks. But CRA load all chunks for every route. 
+
+Let`s add routes for check this.
+Change some project structure for ./src/common/ 
+Create notFoundPage and startPage folders. Folder startPage should contains our default CRA App component but we rename this to StartPage. Add notFoundPage folder with NotFound component.
+Now we have this structure :
+```
+.
+└── src
+    ├── common
+    │   ├── App.js
+    │   ├── notFoundPage
+    │   │   ├── NotFound.css
+    │   │   └── NotFound.js
+    │   └── startPage
+    │       ├── logo.svg
+    │       ├── StartPage.css
+    │       └── StartPage.js
+    ├── index.css
+    ├── index.js
+    └── server
+        └── index.js
+```
+'NotFound.js':
+```javascript
+import React from 'react';
+
+import './NotFound.css';
+
+const NotFound = () => {
+  return (
+    <div className='main-wrapper'>
+      <div className={'title-wrapper'}>
+        <h1>404</h1>
+        <p>page not found</p>
+      </div>
+    </div>
+  );
+};
+
+export default NotFound;
+```
+`NotFound.css`:
+```css
+.main-wrapper {
+  position: relative;
+  height: 100vh;
+  background: linear-gradient(
+          135deg,
+          #1e5799 0%,
+          #207cca 32%,
+          #207cca 32%,
+          #2989d8 50%,
+          #1e5799 97%,
+          #7db9e8 100%
+  );
+}
+
+.title-wrapper {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-right: -50%;
+  transform: translate(-50%, -50%);
+  text-transform: uppercase;
+  text-align: center;
+  color: white;
+  font-weight: bold;
+}
+
+.title-wrapper h1 {
+  font-size: 5rem;
+  margin: 0;
+}
+
+.title-wrapper p {
+  font-size: 2rem;
+  margin: 0;
+}
+```
+`App.js`:
+```javascript
+import React from 'react';
+import { Switch, Route } from 'react-router-dom';
+import startPage from './startPage/StartPage';
+import notFoundPage from './notFoundPage/NotFound';
+
+const App = () => (
+  <Switch>
+    <Route exact path="/" component={startPage} />
+    <Route component={notFoundPage} />
+  </Switch>
+);
+
+export default App;
+```
+Install 'react-route-dom'
+```bash
+$ npm i react-router-dom
+```
+Also we should add StaticRouter to server.
+`.src/server/index.js`:
+```javascript
+import express from 'express';
+import React from 'react';
+import { renderToString } from 'react-dom/server';
+import { StaticRouter } from 'react-router-dom';
+import fs from 'fs';
+import App from '../common/App';
+
+const PORT = 3000;
+const server = express();
+
+server.use('/', (req, res) => {
+  const context = {};
+  const html = renderToString(
+    <StaticRouter location={req.url} context={context}>
+      <App />
+    </StaticRouter>
+  );
+
+  fs.readFile('build/index.html', 'utf8', (err, data) => {
+    if (err) {
+      console.error('Something went wrong:', err);
+      return res.status(500).send('Oops, better luck next time!');
+    }
+    return res.send(
+      data.replace('<div id="root"></div>', `<div id="root">${html}</div>`)
+    );
+  });
+});
+
+server.use(express.static('build'));
+
+server.listen(PORT, () => {
+  console.log(`Server is listening on port ${PORT}`);
+});
+```
+Now when we start server `$ npm start-server` we can see  in `http://localhost:3000/` and `http://localhost:3000/not-found` page sources that included chunks are equal. It is mean that all chunks loads for all page. 
+For load only need chunks for each route we can use dynamic import ( [dynamic import() describe](https://v8.dev/features/dynamic-import)) with react-loadable ( [react-loadable source](https://github.com/jamiebuilds/react-loadable) ) library.

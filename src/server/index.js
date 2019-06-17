@@ -1,14 +1,20 @@
 import express from 'express';
 import React from 'react';
 import { renderToString } from 'react-dom/server';
+import { StaticRouter } from 'react-router-dom';
 import fs from 'fs';
 import App from '../common/App';
 
 const PORT = 3000;
 const server = express();
 
-server.use('^/$', (req, res) => {
-  const html = renderToString(<App />);
+server.use('/', (req, res) => {
+  const context = {};
+  const html = renderToString(
+    <StaticRouter location={req.url} context={context}>
+      <App />
+    </StaticRouter>
+  );
 
   fs.readFile('build/index.html', 'utf8', (err, data) => {
     if (err) {

@@ -6,12 +6,15 @@
     "express": "^4.17.1",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
+    "react-router-dom": "^5.0.1",
     "react-scripts": "3.0.1"
   },
   "scripts": {
     "start": "react-scripts start",
-    "build-server": "NODE_ENV=development webpack --config webpack.server.js --mode=development -w",
-    "start-server": "nodemon ./build-server/bundle.js",
+    "start-server": "npm run clean-build-folders && npm run build && npm run build-server && npm run run-server",
+    "build-server": "NODE_ENV=development webpack --config webpack.server.js --mode=development",
+    "run-server": "nodemon ./build-server/bundle.js",
+    "clean-build-folders": "rm -rf ./build/ && rm -rf ./build-server/",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
