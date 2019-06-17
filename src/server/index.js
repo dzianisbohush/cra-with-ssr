@@ -1,34 +1,66 @@
 import express from 'express';
 import React from 'react';
 import { renderToString } from 'react-dom/server';
+import Loadable from 'react-loadable';
+import { getBundles } from 'react-loadable-ssr-addon';
 import { StaticRouter } from 'react-router-dom';
-import fs from 'fs';
 import App from '../common/App';
+
+import manifest from  '../../dist/react-loadable-ssr-addon';
 
 const PORT = 3000;
 const server = express();
 
+server.use(express.static('dist'));
+
 server.use('/', (req, res) => {
+  const modules = new Set();
   const context = {};
+
   const html = renderToString(
-    <StaticRouter location={req.url} context={context}>
-      <App />
-    </StaticRouter>
+    <Loadable.Capture report={moduleName => modules.add(moduleName)}>
+      <StaticRouter location={req.url} context={context}>
+        <App />
+      </StaticRouter>
+    </Loadable.Capture>
   );
 
-  fs.readFile('build/index.html', 'utf8', (err, data) => {
-    if (err) {
-      console.error('Something went wrong:', err);
-      return res.status(500).send('Oops, better luck next time!');
+  const bundles = getBundles(manifest, [
+    ...manifest.entrypoints,
+    ...Array.from(modules)
+  ]);
+
+  const scripts = bundles.js || [];
+  const styles = bundles.css || [];
+
+  res.send(`
+    <!doctype html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <title>Simple weather app</title>
+        ${styles.map(style => {
+    return `<link href="${style.file}" rel="stylesheet" />`;
+  }).join('\n')}
+    </head>
+    <body>
+        <div id="root">${html}</div>
+        ${scripts.map(script => {
+    return `
+          <script src="${script.file}"></script>`; }).join(' ')
     }
-    return res.send(
-      data.replace('<div id="root"></div>', `<div id="root">${html}</div>`)
-    );
+    </body>
+    </html>
+  `);
+});
+
+Loadable.preloadAll()
+  .then(() => {
+    server.listen(PORT, () => {
+      console.log(`Running on http://localhost:${PORT}/`);
+    });
+  })
+  .catch(err => {
+    console.log(err);
   });
-});
-
-server.use(express.static('build'));
-
-server.listen(PORT, () => {
-  console.log(`Server is listening on port ${PORT}`);
-});
