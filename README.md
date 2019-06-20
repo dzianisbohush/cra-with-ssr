@@ -1,6 +1,7 @@
 # SSR. Pros and cons.
 SSR stands for Server Side Rendering. SSR is a technique for rendering app on the server and then sending a fully rendered page to the client.
 Two main benefits of SSR are performance benefit and SEO optimization.
+
 Lets go to details.
 
 ## Performance benefit.
@@ -105,9 +106,10 @@ $ npx create-react-app cra-with-ssr
 $ cd cra-with-ssr
 $ npm start
 ```
-Go to `localhost:3000` in the browser. If we go to page source, we can see that html is almost 
+Go to http://localhost:3000/ in the browser. If we go to page source, we can see that html is almost 
 empty, 
 CRA has only links to scripts. Our goal is getting rendered page from page. 
+
 Go to the project. 
 Lets change some structure. Add server folder. The folder will contain entry point for server bundle. Add common folder. the folder will contain common components for client and server bundle.
 
@@ -238,7 +240,8 @@ const config = {
 
 module.exports = config;
  ```
-This config says that entry point is ./src/server/index.js, output is ./build-server directory with ./build-server/bundle.js server bundle.
+This config says that entry point is `./src/server/index.js`, output is `./build-server` directory with `bundle.js` server bundle.
+
 Next we should add commands for start server.
 ```json
 {
@@ -283,7 +286,7 @@ Now, our project structure looks like this:
     └── server
         └── index.js
 ```
-Go to [localhost:3000](localhost:3000).
+Go to http://localhost:3000/.
 In page source we can see rendered html inside `<div id="root"></div>`.
 ```html
 <!doctype html>
@@ -323,7 +326,7 @@ Code splitting is a technique which allow create some count of little chunks ins
 
 Let\`s add routes for check it.
 Change some project structure for `./src/common/`
-Create notFoundPage and startPage folders. Folder startPage should contains our default CRA App component but we rename this to StartPage. Add notFoundPage folder with NotFound component.
+Create `notFoundPage` and `startPage` folders. Folder `startPage` should contains our default CRA `App` component but we rename this to `StartPage`. Add `notFoundPage` folder with `NotFound` component.
 Now we have this structure :
 ```
 .
@@ -457,7 +460,8 @@ server.listen(PORT, () => {
   console.log(`Server is listening on port ${PORT}`);
 });
 ```
-Now when we start server `$ npm start-server` we can see  in `http://localhost:3000/` and `http://localhost:3000/not-found` page sources that included chunks are equal. It is mean that all chunks loads for all page. 
+Now when we start server `$ npm start-server` we can see  in http://localhost:3000/ and 
+http://localhost:3000/not-found page sources that included chunks are equal. It is mean that all chunks loads for all page. 
 
 ## Code-splitting with react-loadable
 For load only need chunks for each route we can use dynamic import ( [dynamic import() describe](https://v8.dev/features/dynamic-import)) with react-loadable ( [react-loadable source](https://github.com/jamiebuilds/react-loadable) ) library.
@@ -567,7 +571,7 @@ module.exports = {
   ]
 };
 ```
-We have this entry point `./src/index.js`, output `./dist` folder. We customized optimization.splitChunks ( [more about splitChunks in Webpack 4](https://webpack.js.org/plugins/split-chunks-plugin/#optimizationsplitchunks) ) and added ReactLoadableSSRAddon ( [source](https://github.com/themgoncalves/react-loadable-ssr-addon) ) plugin for creating chunks scheme and ExtractCssChunks ( [source](https://github.com/faceyspacey/extract-css-chunks-webpack-plugin) ) plugin for handling css chunks.
+We have this entry point `./src/index.js`, output `./dist` folder. We customized `optimization.splitChunks` ( [more about splitChunks in Webpack 4](https://webpack.js.org/plugins/split-chunks-plugin/#optimizationsplitchunks) ) and added `ReactLoadableSSRAddon` ( [source](https://github.com/themgoncalves/react-loadable-ssr-addon) ) plugin for creating chunks scheme and `ExtractCssChunks` ( [source](https://github.com/faceyspacey/extract-css-chunks-webpack-plugin) ) plugin for handling css chunks.
 Let\`s add `react-loadable` to our app.
 `App.js`:
 ```javascript
@@ -719,7 +723,7 @@ Loadable.preloadAll()
   });
 ```
 After this, when we start server `$ npm run start-server` and go to page source of 
-`localhost:3000`, we can see that only chunks for this page are loaded.
+http://localhost:3000/, we can see that only chunks for this page are loaded.
 
 ```html
 <!doctype html>
@@ -746,11 +750,11 @@ After this, when we start server `$ npm run start-server` and go to page source 
    </body>
 </html>
 ```
-We can see this link to `index.css` and 'start-page.chunk.css' styles. `index.css` are common 
+We can see this link to `index.css` and `start-page.chunk.css` styles. `index.css` are common 
 styles for all pages and `start-page.chunk.css` are styles only for start page. Similar situation
  is with js files. We have common logic for all pages `index.js` and logic only for start page in
  `start-page.chunk.js` file. 
- In page source of `localhost:3000/not-found` we can see:
+ In page source of http://localhost:3000/not-found we can see:
  ```html
  <!doctype html>
  <html lang="en">
@@ -780,7 +784,7 @@ styles for all pages and `start-page.chunk.css` are styles only for start page. 
  Let`s add Service Worker (SW) to our app.
  
  ## SW to SSR
- Go to `localhost:3000` and open `network` tab in Debugger. Refresh page. As we can see, we get 
+ Go to http://localhost:3000/ and open `network` tab in Debugger. Refresh page. As we can see, we get 
  all files from server each time when we refresh page, no one files keeps on client. Service 
  Worker helps us cashing files and requests from server.
  Add this snippet to `./src/server/index.js` before `</body>`:
@@ -799,6 +803,7 @@ in static folder. In our case static folder `dist`, because we chosen this folde
  line `server.use(express.static('dist'));`. `dist` is temporally folder for our project and we 
  clean the folder each time when start server. We need add command for copying `serviceWorker.js`
   file from root of our project to `./dist` and change `start-server` command. 
+  
   Now our `scripts` in `package.json` looks like this:
   ```json
   {
@@ -835,7 +840,7 @@ self.addEventListener('fetch', event => {
 });
 ```
 In this file we say to SW to cache all files from static folder and to cache requests.
-Now, when we run command `$ npm run start-server`, go to `localhost:3000` and open `network` in 
+Now, when we run command `$ npm run start-server`, go to http://localhost:3000/ and open `network` in 
 Debugger we can see that after refreshing page we use cached files instead receiving 
 files from the server.
 
