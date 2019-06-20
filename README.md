@@ -461,7 +461,8 @@ server.listen(PORT, () => {
 });
 ```
 Now when we start server `$ npm start-server` we can see  in http://localhost:3000/ and 
-http://localhost:3000/not-found page sources that included chunks are equal. It is mean that all chunks loads for all page. 
+http://localhost:3000/not-found page sources that included chunks are equal. It is mean that all 
+chunks loads for all pages. 
 
 ## Code-splitting with react-loadable
 For load only need chunks for each route we can use dynamic import ( [dynamic import() describe](https://v8.dev/features/dynamic-import)) with react-loadable ( [react-loadable source](https://github.com/jamiebuilds/react-loadable) ) library.
@@ -845,9 +846,11 @@ Debugger we can see that after refreshing page we use cached files instead recei
 files from the server.
 
 Before (without SW):
+
 ![without sw](./screenshots/without_sw.jpg)
 
 After (with SW):
+
 ![with sw](./screenshots/with_sw.jpg)
 
 We achieved our goals: added SSR to CRA, slitted code and integrated SW.
