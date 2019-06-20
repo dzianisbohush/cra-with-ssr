@@ -47,9 +47,16 @@ server.use('/', (req, res) => {
     <body>
         <div id="root">${html}</div>
         ${scripts.map(script => {
-    return `
-          <script src="${script.file}"></script>`; }).join(' ')
-    }
+        return `
+              <script src="${script.file}"></script>`; }).join(' ')
+        }
+         <script>
+          if ('serviceWorker' in navigator) {
+              window.addEventListener('load', () => {
+                  navigator.serviceWorker.register('/serviceWorker.js');
+              });
+          }
+        </script>
     </body>
     </html>
   `);

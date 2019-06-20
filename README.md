@@ -9,7 +9,9 @@ Difference beetween SSR and CSR (client-side rendering):
 ![SSR](https://cdn-images-1.medium.com/max/800/1*jJkEQpgZ8waQ5P-W5lhxuQ.png)
 ![CSR](https://cdn-images-1.medium.com/max/800/1*CRiH0hUGoS3aoZaIY4H2yg.png)
 
-For SSR we have rendered html with links to scripts in browser. For CSR case we have only links to scripts. It means that user will see some content faster with SSR scenario. The initial page load is faster.
+For SSR we have rendered html with links to scripts in browser. For CSR case we have only links 
+to scripts. It means that user will see some content faster with SSR scenario. The initial page 
+loading is faster.
 But it is theoretical performance benefit because SSR work speed affects from internet speed of the user making the request, physical location of server and count of users which are trying to access the site.
 
 ## SEO optimization.
@@ -70,7 +72,7 @@ And the page source for the same page with ssr:
       <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
       <title>Simple weather app</title>
       <link href="index.css" rel="stylesheet" />
-      <link href="2.css" rel="stylesheet" />
+      <link href="start-page.chunk.css" rel="stylesheet" />
    </head>
    <body>
       <div id="root">
@@ -103,7 +105,9 @@ $ npx create-react-app cra-with-ssr
 $ cd cra-with-ssr
 $ npm start
 ```
-Go to stat page in the browser. If we go to page source, we can see that html is almost empty, CRA has only links to scripts. Our goal is getting rendered page from page. 
+Go to `localhost:3000` in the browser. If we go to page source, we can see that html is almost 
+empty, 
+CRA has only links to scripts. Our goal is getting rendered page from page. 
 Go to the project. 
 Lets change some structure. Add server folder. The folder will contain entry point for server bundle. Add common folder. the folder will contain common components for client and server bundle.
 
@@ -255,7 +259,7 @@ Run in terminal:
 $ npm run start-server
 ```
 After these commands, we should see `Server is listening on port 3000`.
-Our project structure now is:
+Now, our project structure looks like this:
 ```
 .
 ├── build
@@ -279,8 +283,8 @@ Our project structure now is:
     └── server
         └── index.js
 ```
-Go to [localhost:3000](localhost:3000)
-In page source we can see rendered html inside div with id equal root.
+Go to [localhost:3000](localhost:3000).
+In page source we can see rendered html inside `<div id="root"></div>`.
 ```html
 <!doctype html>
 <html lang="en">
@@ -315,10 +319,10 @@ Let`s go to code splitting.
 ## Code splitting.
 ![A single giant bundle vs multiple smaller bundles](http://thejameskyle.com/img/react-loadable-split-bundles.png)
 
-Code splitting is a technique which allow create some count of little chunks instead of single huge bundle. CRA has code splitting by default. When we run `$ npm run build` we can see in ./build/static/js/ folder some count of chunks. But CRA load all chunks for every route. 
+Code splitting is a technique which allow create some count of little chunks instead of single huge bundle. CRA has code splitting by default. When we run `$ npm run build` we can see in `./build/static/js/` folder some count of chunks. But CRA load all chunks for every route. 
 
-Let`s add routes for check this.
-Change some project structure for ./src/common/ 
+Let\`s add routes for check it.
+Change some project structure for `./src/common/`
 Create notFoundPage and startPage folders. Folder startPage should contains our default CRA App component but we rename this to StartPage. Add notFoundPage folder with NotFound component.
 Now we have this structure :
 ```
@@ -454,14 +458,15 @@ server.listen(PORT, () => {
 });
 ```
 Now when we start server `$ npm start-server` we can see  in `http://localhost:3000/` and `http://localhost:3000/not-found` page sources that included chunks are equal. It is mean that all chunks loads for all page. 
-For load only need chunks for each route we can use dynamic import ( [dynamic import() describe](https://v8.dev/features/dynamic-import)) with react-loadable ( [react-loadable source](https://github.com/jamiebuilds/react-loadable) ) library.
 
 ## Code-splitting with react-loadable
+For load only need chunks for each route we can use dynamic import ( [dynamic import() describe](https://v8.dev/features/dynamic-import)) with react-loadable ( [react-loadable source](https://github.com/jamiebuilds/react-loadable) ) library.
 Install `react-loadable`, `react-loadable-ssr-addon` and `extract-css-chunks-webpack-plugin`:
 ```bash
 $ npm i react-loadable react-loadable-ssr-addon extract-css-chunks-webpack-plugin
 ```
-Default CRA build client logic does not fit for our goal. Let`s create separate webpack config for building client.
+Default CRA build client logic does not fit for our goal. Let\`s create separate webpack config 
+for building client.
 `webpack.client.js`:
 ```javascript
 const path = require('path');
@@ -556,7 +561,7 @@ module.exports = {
     new ExtractCssChunks(
       {
         filename: "[name].css",
-        chunkFilename: "[id].css"
+        chunkFilename: "[name].chunk.css"
       }
     ),
   ]
@@ -613,8 +618,8 @@ Now, when we run `$ npm run build-client` we can see js and css chunks in `./dis
 ```
 .
 └── dist
-    ├── 1.css
-    ├── 2.css
+    ├── not-found-page.chunk.css
+    ├── start-page.chunk.css
     ├── index.css
     ├── index.js
     ├── not-found-page.chunk.js
@@ -713,4 +718,132 @@ Loadable.preloadAll()
     console.log(err);
   });
 ```
-After this, when we start server `$ npm run start-server` and go to page source of `localhost:3000`, we can see that only needed chunks loaded.
+After this, when we start server `$ npm run start-server` and go to page source of 
+`localhost:3000`, we can see that only chunks for this page are loaded.
+
+```html
+<!doctype html>
+<html lang="en">
+   <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+      <title>Simple weather app</title>
+      <link href="index.css" rel="stylesheet" />
+      <link href="start-page.chunk.css" rel="stylesheet" />
+   </head>
+   <body>
+      <div id="root">
+         <div class="App">
+            <header class="App-header">
+               <img src="data:image/svg+xml;base64,..." class="App-logo" alt="logo"/>
+               <p>Edit <code>src/App.js</code> and save to reload.</p>
+               <a class="App-link" href="https://reactjs.org" target="_blank" rel="noopener noreferrer">Learn React</a>
+            </header>
+         </div>
+      </div>
+      <script src="index.js"></script> 
+      <script src="start-page.chunk.js"></script>
+   </body>
+</html>
+```
+We can see this link to `index.css` and 'start-page.chunk.css' styles. `index.css` are common 
+styles for all pages and `start-page.chunk.css` are styles only for start page. Similar situation
+ is with js files. We have common logic for all pages `index.js` and logic only for start page in
+ `start-page.chunk.js` file. 
+ In page source of `localhost:3000/not-found` we can see:
+ ```html
+ <!doctype html>
+ <html lang="en">
+    <head>
+       <meta charset="UTF-8">
+       <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+       <title>Simple weather app</title>
+       <link href="index.css" rel="stylesheet" />
+       <link href="not-found-page.chunk.css" rel="stylesheet" />
+    </head>
+    <body>
+       <div id="root">
+          <div class="main-wrapper">
+             <div class="title-wrapper">
+                <h1>404</h1>
+                <p>page not found</p>
+             </div>
+          </div>
+       </div>
+       <script src="index.js"></script> 
+       <script src="not-found-page.chunk.js"></script>
+    </body>
+ </html>
+ ```
+ This we can see chunks only for not found page.
+ 
+ Let`s add Service Worker (SW) to our app.
+ 
+ ## SW to SSR
+ Go to `localhost:3000` and open `network` tab in Debugger. Refresh page. As we can see, we get 
+ all files from server each time when we refresh page, no one files keeps on client. Service 
+ Worker helps us cashing files and requests from server.
+ Add this snippet to `./src/server/index.js` before `</body>`:
+ ```html
+ <script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/serviceWorker.js');
+        });
+    }
+ </script>
+ ```
+This snippet needs for registration SW and in this snippet we can see that logic for SW is 
+included in `serviceWorker.js` file. Note `/serviceWorker.js` means that our file should locate 
+in static folder. In our case static folder `dist`, because we chosen this folder earlier in this
+ line `server.use(express.static('dist'));`. `dist` is temporally folder for our project and we 
+ clean the folder each time when start server. We need add command for copying `serviceWorker.js`
+  file from root of our project to `./dist` and change `start-server` command. 
+  Now our `scripts` in `package.json` looks like this:
+  ```json
+  {
+      "scripts": {
+        "start": "react-scripts start",
+        "start-server": "npm run clean-build-folders && npm run build-client && npm run build-server && npm run copy-sw-to-dist-folder && npm run run-server",
+        "build-server": "NODE_ENV=development webpack --config webpack.server.js",
+        "run-server": "nodemon ./build-server/bundle.js",
+        "build-client": "NODE_ENV=development webpack --config webpack.client.js",
+        "copy-sw-to-dist-folder": "cp serviceWorker.js dist",
+        "clean-build-folders": "rm -rf ./build/ && rm -rf ./build-server/ && rm -rf ./dist/",
+        "build": "react-scripts build",
+        "test": "react-scripts test",
+        "eject": "react-scripts eject"
+      }
+  }
+  ```
+Add this content to `./serviceWorker.js`:
+```javascript
+const CACHE_NAME = 'cache-token';
+const urlsToCache = ['/'];
+
+// eslint-disable-next-line no-restricted-globals
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
+  )
+});
+// eslint-disable-next-line no-restricted-globals
+self.addEventListener('fetch', event => {
+  event.respondWith(
+    caches.match(event.request).then(response => response || fetch(event.request))
+  );
+});
+```
+In this file we say to SW to cache all files from static folder and to cache requests.
+Now, when we run command `$ npm run start-server`, go to `localhost:3000` and open `network` in 
+Debugger we can see that after refreshing page we use cached files instead receiving 
+files from the server.
+
+Before (without SW):
+![without sw](./screenshots/without_sw.jpg)
+
+After (with SW):
+![with sw](./screenshots/with_sw.jpg)
+
+We achieved our goals: added SSR to CRA, slitted code and integrated SW.
+You can find repository with code from the guide this https://github.com/dzianisbohush/cra-with-ssr

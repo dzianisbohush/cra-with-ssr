@@ -90,7 +90,7 @@ module.exports = {
     new ExtractCssChunks(
       {
         filename: "[name].css",
-        chunkFilename: "[id].css"
+        chunkFilename: "[name].chunk.css"
       }
     ),
   ]

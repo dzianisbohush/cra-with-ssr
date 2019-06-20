@@ -14,10 +14,11 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "start-server": "npm run clean-build-folders && npm run build-client && npm run build-server && npm run run-server",
+    "start-server": "npm run clean-build-folders && npm run build-client && npm run build-server && npm run copy-sw-to-dist-folder && npm run run-server",
     "build-server": "NODE_ENV=development webpack --config webpack.server.js",
     "run-server": "nodemon ./build-server/bundle.js",
     "build-client": "NODE_ENV=development webpack --config webpack.client.js",
+    "copy-sw-to-dist-folder": "cp serviceWorker.js dist",
     "clean-build-folders": "rm -rf ./build/ && rm -rf ./build-server/ && rm -rf ./dist/",
     "build": "react-scripts build",
     "test": "react-scripts test",
