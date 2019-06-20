@@ -1,22 +1,26 @@
 # SSR. Pros and cons.
-SSR stands for Server Side Rendering. SSR is a technique for rendering app on the server and then sending a fully rendered page to the client.
+SSR stands for Server Side Rendering. SSR is a technique for rendering apps on the server and 
+then sending a fully rendered page to the client.
 Two main benefits of SSR are performance benefit and SEO optimization.
 
-Lets go to details.
+Let`s go to details.
 
 ## Performance benefit.
-Difference beetween SSR and CSR (client-side rendering):
+Difference between SSR and CSR (client-side rendering):
 
 ![SSR](https://cdn-images-1.medium.com/max/800/1*jJkEQpgZ8waQ5P-W5lhxuQ.png)
 ![CSR](https://cdn-images-1.medium.com/max/800/1*CRiH0hUGoS3aoZaIY4H2yg.png)
 
-For SSR we have rendered html with links to scripts in browser. For CSR case we have only links 
-to scripts. It means that user will see some content faster with SSR scenario. The initial page 
+For SSR we have rendered html with links to scripts in the browser. For CSR case we have only links 
+to scripts. It means that the user will see some content faster with SSR scenario. The initial page 
 loading is faster.
-But it is theoretical performance benefit because SSR work speed affects from internet speed of the user making the request, physical location of server and count of users which are trying to access the site.
+But it is theoretical performance benefit because SSR work speed affects from internet speed of 
+the user making the request, the physical location of server and count of users which are trying to
+ access the site.
 
 ## SEO optimization.
-One of benefit of using SSR is in having an app that can be crawled for its content even for crawlers that don’t execute JavaScript code. This can help with SEO and with providing meta data to social media channels.
+One the benefit of using SSR is in having an app that can be crawled for its content even for 
+crawlers that don’t execute JavaScript code. This can help with SEO and providing metadata to social media channels.
 
 Page source for start page of create-react-app:
 
@@ -93,13 +97,14 @@ And the page source for the same page with ssr:
 As we can see in first snippet we have only links to scripts in the body tag and in second snippet we see rendered html and links to scripts. Second scenario is good for SEO bot, it can read context of page. 
 
 ## SSR cons.
-SSR is not silver bullet for all use cases. Major cons of SSR are frequent server requests and full page reloads.
+SSR is no a silver bullet for all use cases. Major cons of SSR are frequent server requests and 
+full page reloads.
 
-In conclusion, this is quote of Adam Zerner:
+In conclusion, this is the quote of Adam Zerner:
 >SSR is analogous to you driving over to the supermarket every time you want to eat.
 With client-side rendering, you go to the supermarket once and spend 45 minutes walking around buying a bunch of food for the month. Then, whenever you want to eat, you just open the fridge.
 
-# Migarating create-react-app to SSR.
+# Migrating create-react-app to SSR.
 Let's start create-react-app (CRA).
 ```bash
 $ npx create-react-app cra-with-ssr
@@ -111,7 +116,7 @@ empty,
 CRA has only links to scripts. Our goal is getting rendered page from page. 
 
 Go to the project. 
-Lets change some structure. Add server folder. The folder will contain entry point for server bundle. Add common folder. the folder will contain common components for client and server bundle.
+Let`s change some structure. Add server folder. The folder will contain entry point for server bundle. Add common folder. the folder will contain common components for client and server bundle.
 
 ```
 .
@@ -125,7 +130,8 @@ Lets change some structure. Add server folder. The folder will contain entry poi
     └── server
         └── index.js
 ```
-Change path to App component and replace render to hydrate method (indicates to the DOM renderer that we’re rehydrating the app after a server-side render) in src/index.js
+Change the path to App component and replace render to hydrate method (indicates to the DOM renderer
+ that we’re rehydrating the app after a server-side render) in src/index.js
 ```javascript
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -172,7 +178,7 @@ server.listen(PORT, () => {
   console.log(`Server is listening on port ${PORT}`);
 });
 ```
-We have command for build client bundle by default. It is `$ npm build` command. 
+We have the command for build client bundle by default. It is `$ npm build` command. 
 Now, let`s configure webpack for create server bundle.
 Install dev dependencies:
 ```bash
@@ -242,7 +248,7 @@ module.exports = config;
  ```
 This config says that entry point is `./src/server/index.js`, output is `./build-server` directory with `bundle.js` server bundle.
 
-Next we should add commands for start server.
+Next, we should add commands for start server.
 ```json
 {
      "scripts": {
@@ -322,7 +328,8 @@ Let`s go to code splitting.
 ## Code splitting.
 ![A single giant bundle vs multiple smaller bundles](http://thejameskyle.com/img/react-loadable-split-bundles.png)
 
-Code splitting is a technique which allow create some count of little chunks instead of single huge bundle. CRA has code splitting by default. When we run `$ npm run build` we can see in `./build/static/js/` folder some count of chunks. But CRA load all chunks for every route. 
+Code splitting is a technique which allows creating some count of little chunks instead of a single 
+huge bundle. CRA has code splitting by default. When we run `$ npm run build` we can see in `./build/static/js/` folder some count of chunks. But CRA load all chunks for every route. 
 
 Let\`s add routes for check it.
 Change some project structure for `./src/common/`
@@ -631,7 +638,9 @@ Now, when we run `$ npm run build-client` we can see js and css chunks in `./dis
     ├── react-loadable-ssr-addon.json
     └── start-page.chunk.js
 ```
-This we have common for all pages chunks (`index.js` and `index.css`) and separate chunks for each page. `react-loadable-ssr-addon.json` contains info what chunks need use for particular page.
+This we have common for all pages chunks (`index.js` and `index.css`) and separate chunks for 
+each page. `react-loadable-ssr-addon.json` contains info what chunks need use for the particular 
+page.
 Next, we should should change `./src/index.js`:
 ```javascript
 import React from 'react';
@@ -786,8 +795,9 @@ styles for all pages and `start-page.chunk.css` are styles only for start page. 
  
  ## SW to SSR
  Go to http://localhost:3000/ and open `network` tab in Debugger. Refresh page. As we can see, we get 
- all files from server each time when we refresh page, no one files keeps on client. Service 
- Worker helps us cashing files and requests from server.
+ all files from the server each time when we refresh the page, no one files keeps on the client. 
+ Service 
+ Worker helps us cashing files and requests from the server.
  Add this snippet to `./src/server/index.js` before `</body>`:
  ```html
  <script>
@@ -841,8 +851,9 @@ self.addEventListener('fetch', event => {
 });
 ```
 In this file we say to SW to cache all files from static folder and to cache requests.
-Now, when we run command `$ npm run start-server`, go to http://localhost:3000/ and open `network` in 
-Debugger we can see that after refreshing page we use cached files instead receiving 
+Now, when we run the command `$ npm run start-server`, go to http://localhost:3000/ and open 
+`network` in 
+Debugger we can see that after refreshing page we use cached files instead of receiving 
 files from the server.
 
 Before (without SW):
@@ -854,4 +865,5 @@ After (with SW):
 ![with sw](./screenshots/with_sw.jpg)
 
 We achieved our goals: added SSR to CRA, slitted code and integrated SW.
-You can find repository with code from the guide this https://github.com/dzianisbohush/cra-with-ssr
+You can find the repository with code from the guide this https://github
+.com/dzianisbohush/cra-with-ssr
