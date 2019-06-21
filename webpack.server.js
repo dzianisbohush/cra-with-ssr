@@ -1,12 +1,12 @@
 const path = require('path');
 const webpackNodeExternals = require('webpack-node-externals');
 
-const config = {
+module.exports = {
   target: 'node',
   entry: './src/server/index.js',
   output: {
     filename: 'bundle.js',
-    path: path.resolve(__dirname, 'build-server')
+    path: path.resolve(__dirname, 'build-server'),
   },
   externals: [webpackNodeExternals()],
   module: {
@@ -18,17 +18,15 @@ const config = {
           loader: 'babel-loader',
           options: {
             babelrc: false,
-            presets: [
-              '@babel/preset-env',
-              '@babel/preset-react'
-            ],
+            presets: ['@babel/preset-env', '@babel/preset-react'],
             plugins: [
               '@babel/plugin-syntax-dynamic-import',
-              'react-loadable/babel'
-            ]
-          }
-        }
+              'react-loadable/babel',
+            ],
+          },
+        },
       },
+      // we use url-loader as loader for webpack which transforms files into base64 URIs
       {
         test: /\.(gif|jpe?g|png|ico)$/,
         use: [
@@ -38,7 +36,7 @@ const config = {
               limit: 10000,
             },
           },
-        ]
+        ],
       },
       {
         test: /\.(otf|eot|svg|ttf|woff|woff2).*$/,
@@ -49,14 +47,16 @@ const config = {
               limit: 10000,
             },
           },
-        ]
+        ],
       },
+      // we use css-loader for handling css files
       {
         test: /\.css$/i,
         use: ['css-loader'],
-      }
-    ]
-  }
+      },
+    ],
+  },
+  optimization: {
+    nodeEnv: 'development', // NODE_ENV
+  },
 };
-
-module.exports = config;

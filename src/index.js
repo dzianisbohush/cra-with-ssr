@@ -10,9 +10,9 @@ window.onload = () => {
   Loadable.preloadReady().then(() => {
     ReactDOM.hydrate(
       <BrowserRouter>
-        <App/>
+        <App />
       </BrowserRouter>,
-      document.getElementById('root')
+      document.getElementById('root'),
     );
   });
 };

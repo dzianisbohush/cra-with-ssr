@@ -1,6 +1,6 @@
 const path = require('path');
 const ReactLoadableSSRAddon = require('react-loadable-ssr-addon');
-const ExtractCssChunks = require("extract-css-chunks-webpack-plugin");
+const ExtractCssChunks = require('extract-css-chunks-webpack-plugin');
 
 module.exports = {
   target: 'web',
@@ -9,9 +9,9 @@ module.exports = {
   },
   output: {
     publicPath: '/dist/',
-    filename: '[name].js',
-    chunkFilename: '[name].chunk.js',
-    path: path.join(__dirname, 'dist')
+    filename: '[name].js', // name for file with common logic
+    chunkFilename: '[name].chunk.js', // name for logic chunks
+    path: path.join(__dirname, 'dist'),
   },
   module: {
     rules: [
@@ -22,16 +22,15 @@ module.exports = {
           loader: 'babel-loader',
           options: {
             babelrc: false,
-            presets: [
-              '@babel/preset-env',
-              '@babel/preset-react'
-            ],
+            presets: ['@babel/preset-env', '@babel/preset-react'],
             plugins: [
+              // the plugin need for working with dynamic imports
               '@babel/plugin-syntax-dynamic-import',
-              'react-loadable/babel'
-            ]
-          }
-        }
+              // the plugin need for working with react-loadable library
+              'react-loadable/babel',
+            ],
+          },
+        },
       },
       {
         test: /\.(gif|jpe?g|png|ico)$/,
@@ -42,7 +41,7 @@ module.exports = {
               limit: 10000,
             },
           },
-        ]
+        ],
       },
       {
         test: /\.(otf|eot|svg|ttf|woff|woff2).*$/,
@@ -53,21 +52,22 @@ module.exports = {
               limit: 10000,
             },
           },
-        ]
+        ],
       },
+      // this say that for css handling need to use ExtractCssChunks loader by default
       {
         test: /\.css$/,
         use: [
           {
-            loader:ExtractCssChunks.loader
+            loader: ExtractCssChunks.loader,
           },
-          "css-loader"
-        ]
-      }
-    ]
+          'css-loader',
+        ],
+      },
+    ],
   },
   optimization: {
-    nodeEnv: 'development',
+    nodeEnv: 'development', // NODE_ENV
     splitChunks: {
       cacheGroups: {
         commons: {
@@ -81,17 +81,17 @@ module.exports = {
           reuseExistingChunk: true,
         },
       },
-    }
+    },
   },
   plugins: [
+    // the plugin need for creating chunks scheme
     new ReactLoadableSSRAddon({
       filename: 'react-loadable-ssr-addon.json',
     }),
-    new ExtractCssChunks(
-      {
-        filename: "[name].css",
-        chunkFilename: "[name].chunk.css"
-      }
-    ),
-  ]
+    // the plugin need for naming css chunks
+    new ExtractCssChunks({
+      filename: '[name].css', // name for common styles
+      chunkFilename: '[name].chunk.css', // names for styles chunks
+    }),
+  ],
 };

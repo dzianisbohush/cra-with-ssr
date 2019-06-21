@@ -5,10 +5,9 @@ import Loadable from 'react-loadable';
 import { getBundles } from 'react-loadable-ssr-addon';
 import { StaticRouter } from 'react-router-dom';
 import App from '../common/App';
+import manifest from '../../dist/react-loadable-ssr-addon';
 
-import manifest from  '../../dist/react-loadable-ssr-addon';
-
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 const server = express();
 
 server.use(express.static('dist'));
@@ -22,12 +21,12 @@ server.use('/', (req, res) => {
       <StaticRouter location={req.url} context={context}>
         <App />
       </StaticRouter>
-    </Loadable.Capture>
+    </Loadable.Capture>,
   );
 
   const bundles = getBundles(manifest, [
     ...manifest.entrypoints,
-    ...Array.from(modules)
+    ...Array.from(modules),
   ]);
 
   const scripts = bundles.js || [];
@@ -40,16 +39,20 @@ server.use('/', (req, res) => {
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
         <title>Simple weather app</title>
-        ${styles.map(style => {
-    return `<link href="${style.file}" rel="stylesheet" />`;
-  }).join('\n')}
+        ${styles
+          .map(style => {
+            return `<link href="${style.file}" rel="stylesheet" />`;
+          })
+          .join('\n')}
     </head>
     <body>
         <div id="root">${html}</div>
-        ${scripts.map(script => {
-        return `
-              <script src="${script.file}"></script>`; }).join(' ')
-        }
+        ${scripts
+          .map(script => {
+            return `
+              <script src="${script.file}"></script>`;
+          })
+          .join(' ')}
          <script>
           if ('serviceWorker' in navigator) {
               window.addEventListener('load', () => {

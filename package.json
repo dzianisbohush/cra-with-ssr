@@ -10,14 +10,15 @@
     "react-loadable": "^5.5.0",
     "react-loadable-ssr-addon": "^0.1.9",
     "react-router-dom": "^5.0.1",
-    "react-scripts": "3.0.1"
+    "react-scripts": "3.0.1",
+    "webpack-node-externals": "^1.7.2"
   },
   "scripts": {
     "start": "react-scripts start",
     "start-server": "npm run clean-build-folders && npm run build-client && npm run build-server && npm run copy-sw-to-dist-folder && npm run run-server",
-    "build-server": "NODE_ENV=development webpack --config webpack.server.js",
+    "build-server": "webpack --config webpack.server.js",
     "run-server": "nodemon ./build-server/bundle.js",
-    "build-client": "NODE_ENV=development webpack --config webpack.client.js",
+    "build-client": "webpack --config webpack.client.js",
     "copy-sw-to-dist-folder": "cp serviceWorker.js dist",
     "clean-build-folders": "rm -rf ./build/ && rm -rf ./build-server/ && rm -rf ./dist/",
     "build": "react-scripts build",
@@ -40,8 +41,17 @@
     ]
   },
   "devDependencies": {
+    "eslint": "^5.16.0",
+    "eslint-config-airbnb": "^17.1.0",
+    "eslint-config-prettier": "^5.0.0",
+    "eslint-import-resolver-webpack": "^0.11.1",
+    "eslint-plugin-import": "^2.17.3",
+    "eslint-plugin-jsx-a11y": "^6.2.1",
+    "eslint-plugin-prettier": "^3.1.0",
+    "eslint-plugin-react": "^7.13.0",
     "nodemon": "^1.19.1",
-    "webpack-cli": "^3.3.4",
-    "webpack-node-externals": "^1.7.2"
+    "prettier": "^1.18.2",
+    "stylelint-config-standard": "^18.3.0",
+    "webpack-cli": "^3.3.4"
   }
 }

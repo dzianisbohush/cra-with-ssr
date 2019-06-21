@@ -146,37 +146,37 @@ $ npm install express
 ```
 Here is content for src/server/index.js:
 ```javascript
-import express from "express";
-import React from "react";
-import { renderToString } from "react-dom/server";
-import fs from "fs";
-import App from "../common/App";
-
-const PORT = 3000;
-const server = express();
-
-server.use("^/$", (req, res) => {
-  //render app to string
-  const html = renderToString(<App />);
-
-  fs.readFile("build/index.html", "utf8", (err, data) => {
-    if (err) {
-      console.error("Something went wrong:", err);
-      return res.status(500).send("Oops, better luck next time!");
-    }
-    //inject app`s static contents to the div with id equal root
-    return res.send(
-      data.replace('<div id="root"></div>', `<div id="root">${html}</div>`)
-    );
-  });
-});
-
-//serve contents from build directory as static files
-server.use(express.static("build"));
-
-server.listen(PORT, () => {
-  console.log(`Server is listening on port ${PORT}`);
-});
+ import express from 'express';
+ import React from 'react';
+ import { renderToString } from 'react-dom/server';
+ import fs from 'fs';
+ import App from '../common/App';
+ 
+ const PORT = process.env.PORT || 3000;
+ const server = express();
+ 
+ server.use('^/$', (req, res) => {
+   // render app to string
+   const html = renderToString(<App />);
+ 
+   fs.readFile('build/index.html', 'utf8', (err, data) => {
+     if (err) {
+       console.error('Something went wrong:', err);
+       return res.status(500).send('Oops, better luck next time!');
+     }
+     // inject app`s static contents to the div with id equal root
+     return res.send(
+       data.replace('<div id="root"></div>', `<div id="root">${html}</div>`),
+     );
+   });
+ });
+ 
+ // serve contents from build directory as static files
+ server.use(express.static('build'));
+ 
+ server.listen(PORT, () => {
+   console.log(`Server is listening on port ${PORT}`);
+ });
 ```
 We have the command for build client bundle by default. It is `$ npm build` command. 
 Now, let`s configure webpack for create server bundle.
@@ -187,15 +187,15 @@ Install dev dependencies:
  Add `webpack.server.js` to root of project.
  This is content of `webpack.server.js`:
  ```javascript
- const path = require('path');
+const path = require('path');
 const webpackNodeExternals = require('webpack-node-externals');
 
-const config = {
+module.exports = {
   target: 'node',
   entry: './src/server/index.js',
   output: {
     filename: 'bundle.js',
-    path: path.resolve(__dirname, 'build-server')
+    path: path.resolve(__dirname, 'build-server'),
   },
   externals: [webpackNodeExternals()],
   module: {
@@ -207,13 +207,11 @@ const config = {
           loader: 'babel-loader',
           options: {
             babelrc: false,
-            presets: [
-              '@babel/preset-env',
-              '@babel/preset-react'
-            ]
-          }
-        }
+            presets: ['@babel/preset-env', '@babel/preset-react'],
+          },
+        },
       },
+      // we use url-loader as loader for webpack which transforms files into base64 URIs
       {
         test: /\.(gif|jpe?g|png|ico)$/,
         use: [
@@ -223,7 +221,7 @@ const config = {
               limit: 10000,
             },
           },
-        ]
+        ],
       },
       {
         test: /\.(otf|eot|svg|ttf|woff|woff2).*$/,
@@ -234,17 +232,20 @@ const config = {
               limit: 10000,
             },
           },
-        ]
+        ],
       },
+      // we use css-loader for handling css files
       {
         test: /\.css$/i,
         use: ['css-loader'],
-      }
-    ]
-  }
+      },
+    ],
+  },
+  optimization: {
+    nodeEnv: 'development', // NODE_ENV
+  },
 };
 
-module.exports = config;
  ```
 This config says that entry point is `./src/server/index.js`, output is `./build-server` directory with `bundle.js` server bundle.
 
@@ -254,7 +255,7 @@ Next, we should add commands for start server.
      "scripts": {
         "start": "react-scripts start",
         "start-server": "npm run clean-build-folders && npm run build && npm run build-server && npm run run-server",
-        "build-server": "NODE_ENV=development webpack --config webpack.server.js --mode=development",
+        "build-server": "webpack --config webpack.server.js --mode=development",
         "run-server": "nodemon ./build-server/bundle.js",
         "clean-build-folders": "rm -rf ./build/ && rm -rf ./build-server/",
         "build": "react-scripts build",
@@ -361,8 +362,8 @@ import './NotFound.css';
 
 const NotFound = () => {
   return (
-    <div className='main-wrapper'>
-      <div className={'title-wrapper'}>
+    <div className="main-wrapper">
+      <div className="title-wrapper">
         <h1>404</h1>
         <p>page not found</p>
       </div>
@@ -377,15 +378,7 @@ export default NotFound;
 .main-wrapper {
   position: relative;
   height: 100vh;
-  background: linear-gradient(
-          135deg,
-          #1e5799 0%,
-          #207cca 32%,
-          #207cca 32%,
-          #2989d8 50%,
-          #1e5799 97%,
-          #7db9e8 100%
-  );
+  background: linear-gradient(135deg, #1e5799 0%, #207cca 32%, #207cca 32%, #2989d8 50%, #1e5799 97%, #7db9e8 100%);
 }
 
 .title-wrapper {
@@ -440,7 +433,7 @@ import { StaticRouter } from 'react-router-dom';
 import fs from 'fs';
 import App from '../common/App';
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 const server = express();
 
 server.use('/', (req, res) => {
@@ -448,7 +441,7 @@ server.use('/', (req, res) => {
   const html = renderToString(
     <StaticRouter location={req.url} context={context}>
       <App />
-    </StaticRouter>
+    </StaticRouter>,
   );
 
   fs.readFile('build/index.html', 'utf8', (err, data) => {
@@ -457,7 +450,7 @@ server.use('/', (req, res) => {
       return res.status(500).send('Oops, better luck next time!');
     }
     return res.send(
-      data.replace('<div id="root"></div>', `<div id="root">${html}</div>`)
+      data.replace('<div id="root"></div>', `<div id="root">${html}</div>`),
     );
   });
 });
@@ -484,7 +477,7 @@ for building client.
 ```javascript
 const path = require('path');
 const ReactLoadableSSRAddon = require('react-loadable-ssr-addon');
-const ExtractCssChunks = require("extract-css-chunks-webpack-plugin");
+const ExtractCssChunks = require('extract-css-chunks-webpack-plugin');
 
 module.exports = {
   target: 'web',
@@ -493,9 +486,9 @@ module.exports = {
   },
   output: {
     publicPath: '/dist/',
-    filename: '[name].js',
-    chunkFilename: '[name].chunk.js',
-    path: path.join(__dirname, 'dist')
+    filename: '[name].js', // name for file with common logic
+    chunkFilename: '[name].chunk.js', // name for logic chunks
+    path: path.join(__dirname, 'dist'),
   },
   module: {
     rules: [
@@ -506,16 +499,15 @@ module.exports = {
           loader: 'babel-loader',
           options: {
             babelrc: false,
-            presets: [
-              '@babel/preset-env',
-              '@babel/preset-react'
-            ],
+            presets: ['@babel/preset-env', '@babel/preset-react'],
             plugins: [
+              // the plugin need for working with dynamic imports
               '@babel/plugin-syntax-dynamic-import',
-              'react-loadable/babel'
-            ]
-          }
-        }
+              // the plugin need for working with react-loadable library
+              'react-loadable/babel',
+            ],
+          },
+        },
       },
       {
         test: /\.(gif|jpe?g|png|ico)$/,
@@ -526,7 +518,7 @@ module.exports = {
               limit: 10000,
             },
           },
-        ]
+        ],
       },
       {
         test: /\.(otf|eot|svg|ttf|woff|woff2).*$/,
@@ -537,21 +529,22 @@ module.exports = {
               limit: 10000,
             },
           },
-        ]
+        ],
       },
+      // this say that for css handling need to use ExtractCssChunks loader by default
       {
         test: /\.css$/,
         use: [
           {
-            loader:ExtractCssChunks.loader
+            loader: ExtractCssChunks.loader,
           },
-          "css-loader"
-        ]
-      }
-    ]
+          'css-loader',
+        ],
+      },
+    ],
   },
   optimization: {
-    nodeEnv: 'development',
+    nodeEnv: 'development', // NODE_ENV
     splitChunks: {
       cacheGroups: {
         commons: {
@@ -565,66 +558,69 @@ module.exports = {
           reuseExistingChunk: true,
         },
       },
-    }
+    },
   },
   plugins: [
+    // the plugin need for creating chunks scheme
     new ReactLoadableSSRAddon({
       filename: 'react-loadable-ssr-addon.json',
     }),
-    new ExtractCssChunks(
-      {
-        filename: "[name].css",
-        chunkFilename: "[name].chunk.css"
-      }
-    ),
-  ]
+    // the plugin need for naming css chunks
+    new ExtractCssChunks({
+      filename: '[name].css', // name for common styles
+      chunkFilename: '[name].chunk.css', // names for styles chunks
+    }),
+  ],
 };
 ```
-We have this entry point `./src/index.js`, output `./dist` folder. We customized `optimization.splitChunks` ( [more about splitChunks in Webpack 4](https://webpack.js.org/plugins/split-chunks-plugin/#optimizationsplitchunks) ) and added `ReactLoadableSSRAddon` ( [source](https://github.com/themgoncalves/react-loadable-ssr-addon) ) plugin for creating chunks scheme and `ExtractCssChunks` ( [source](https://github.com/faceyspacey/extract-css-chunks-webpack-plugin) ) plugin for handling css chunks.
+This we have entry point `./src/index.js`, output `./dist` folder. We customized `optimization
+.splitChunks` ( [more about splitChunks in Webpack 4](https://webpack.js.org/plugins/split-chunks-plugin/#optimizationsplitchunks) ) and added `ReactLoadableSSRAddon` ( [source](https://github.com/themgoncalves/react-loadable-ssr-addon) ) plugin for creating chunks scheme and `ExtractCssChunks` ( [source](https://github.com/faceyspacey/extract-css-chunks-webpack-plugin) ) plugin for handling css chunks.
 Also we need add `@babel/plugin-syntax-dynamic-import` and `react-loadable/babel` plugins for `babel-loader` to `webpack
 .server.js`:
 ```javascript
-module: {
-  rules: [
-    {
-      test: /\.js$/,
-      exclude: /node_modules/,
-      use: {
-        loader: "babel-loader",
-        options: {
-          babelrc: false,
-          presets: ["@babel/preset-env", "@babel/preset-react"],
-          plugins: [
-            "@babel/plugin-syntax-dynamic-import",
-            "react-loadable/babel"
-          ]
-        }
-      }
-    }
-    // another rules
-  ];
-}
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        use: {
+          loader: 'babel-loader',
+          options: {
+            babelrc: false,
+            presets: ['@babel/preset-env', '@babel/preset-react'],
+            plugins: [
+              '@babel/plugin-syntax-dynamic-import',
+              'react-loadable/babel',
+            ],
+          },
+        },
+      },
+      // another rules
+    ];
+  }
 ```
 
 Let\`s add `react-loadable` to our app.
 `App.js`:
 ```javascript
 import React from 'react';
-import Loadable from "react-loadable";
+import Loadable from 'react-loadable';
 import { Switch, Route } from 'react-router-dom';
 
 const StartPageLoadable = Loadable({
-  loader: () => import(/* webpackChunkName: "start-page" */'./startPage/StartPage'),
+  loader: () =>
+    import(/* webpackChunkName: "start-page" */ './startPage/StartPage'),
   loading() {
-    return <div>Loading...</div>
-  }
+    return <div>Loading...</div>;
+  },
 });
 
 const NotFoundPageLoadable = Loadable({
-  loader: () => import(/* webpackChunkName: "not-found-page" */'./notFoundPage/NotFound'),
+  loader: () =>
+    import(/* webpackChunkName: "not-found-page" */ './notFoundPage/NotFound'),
   loading() {
-    return <div>Loading...</div>
-  }
+    return <div>Loading...</div>;
+  },
 });
 
 const App = () => (
@@ -642,9 +638,9 @@ Let\`s add `build-client` and change `start-server` commands in `package.json`:
  "scripts": {
     "start": "react-scripts start",
     "start-server": "npm run clean-build-folders && npm run build-client && npm run build-server && npm run run-server",
-    "build-server": "NODE_ENV=development webpack --config webpack.server.js",
+    "build-server": "webpack --config webpack.server.js",
     "run-server": "nodemon ./build-server/bundle.js",
-    "build-client": "NODE_ENV=development webpack --config webpack.client.js",
+    "build-client": "webpack --config webpack.client.js",
     "clean-build-folders": "rm -rf ./build/ && rm -rf ./build-server/ && rm -rf ./dist/",
     "build": "react-scripts build",
     "test": "react-scripts test",
@@ -681,9 +677,9 @@ window.onload = () => {
   Loadable.preloadReady().then(() => {
     ReactDOM.hydrate(
       <BrowserRouter>
-        <App/>
+        <App />
       </BrowserRouter>,
-      document.getElementById('root')
+      document.getElementById('root'),
     );
   });
 };
@@ -691,73 +687,77 @@ window.onload = () => {
 We use the `Loadable.preloadReady()` method on the client to preload the loadable components that were included on the page. The method returns a promise, which on resolution means that we can hydrate our app.
 Change `./src/server/index.js`:
 ```javascript
-import express from 'express';
-import React from 'react';
-import { renderToString } from 'react-dom/server';
-import Loadable from 'react-loadable';
-import { getBundles } from 'react-loadable-ssr-addon';
-import { StaticRouter } from 'react-router-dom';
-import App from '../common/App';
-
-import manifest from  '../../dist/react-loadable-ssr-addon';
-
-const PORT = 3000;
-const server = express();
-
-server.use(express.static('dist'));
-
-server.use('/', (req, res) => {
-  const modules = new Set();
-  const context = {};
-
-  const html = renderToString(
-    <Loadable.Capture report={moduleName => modules.add(moduleName)}>
-      <StaticRouter location={req.url} context={context}>
-        <App />
-      </StaticRouter>
-    </Loadable.Capture>
-  );
-
-  const bundles = getBundles(manifest, [
-    ...manifest.entrypoints,
-    ...Array.from(modules)
-  ]);
-
-  const scripts = bundles.js || [];
-  const styles = bundles.css || [];
-
-  res.send(`
-    <!doctype html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-        <title>Simple weather app</title>
-        ${styles.map(style => {
-    return `<link href="${style.file}" rel="stylesheet" />`;
-        }).join('\n')}
-    </head>
-    <body>
-        <div id="root">${html}</div>
-        ${scripts.map(script => {
-        return `
-          <script src="${script.file}"></script>`; }).join(' ')
-        }
-    </body>
-    </html>
-  `);
-});
-
-// Loadable.preloadAll method returns a promise that will resolve when all your loadable components are ready.
-Loadable.preloadAll()
-  .then(() => {
-    server.listen(PORT, () => {
-      console.log(`Running on http://localhost:${PORT}/`);
-    });
-  })
-  .catch(err => {
-    console.log(err);
-  });
+ import express from 'express';
+ import React from 'react';
+ import { renderToString } from 'react-dom/server';
+ import Loadable from 'react-loadable';
+ import { getBundles } from 'react-loadable-ssr-addon';
+ import { StaticRouter } from 'react-router-dom';
+ import App from '../common/App';
+ 
+ import manifest from '../../dist/react-loadable-ssr-addon';
+ 
+ const PORT = process.env.PORT || 3000;
+ const server = express();
+ 
+ server.use(express.static('dist'));
+ 
+ server.use('/', (req, res) => {
+   const modules = new Set();
+   const context = {};
+ 
+   const html = renderToString(
+     <Loadable.Capture report={moduleName => modules.add(moduleName)}>
+       <StaticRouter location={req.url} context={context}>
+         <App />
+       </StaticRouter>
+     </Loadable.Capture>,
+   );
+ 
+   const bundles = getBundles(manifest, [
+     ...manifest.entrypoints,
+     ...Array.from(modules),
+   ]);
+ 
+   const scripts = bundles.js || [];
+   const styles = bundles.css || [];
+ 
+   res.send(`
+     <!doctype html>
+     <html lang="en">
+     <head>
+         <meta charset="UTF-8">
+         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+         <title>Simple weather app</title>
+         ${styles
+           .map(style => {
+             return `<link href="${style.file}" rel="stylesheet" />`;
+           })
+           .join('\n')}
+     </head>
+     <body>
+         <div id="root">${html}</div>
+         ${scripts
+           .map(script => {
+             return `
+           <script src="${script.file}"></script>`;
+           })
+           .join(' ')}
+     </body>
+     </html>
+   `);
+ });
+ 
+ // Loadable.preloadAll method returns a promise that will resolve when all your loadable components are ready.
+ Loadable.preloadAll()
+   .then(() => {
+     server.listen(PORT, () => {
+       console.log(`Running on http://localhost:${PORT}/`);
+     });
+   })
+   .catch(err => {
+     console.log(err);
+   });
 ```
 After this, when we start server `$ npm run start-server` and go to page source of 
 http://localhost:3000/, we can see that only chunks for this page are loaded.
@@ -848,9 +848,9 @@ in static folder. In our case static folder `dist`, because we chosen this folde
       "scripts": {
         "start": "react-scripts start",
         "start-server": "npm run clean-build-folders && npm run build-client && npm run build-server && npm run copy-sw-to-dist-folder && npm run run-server",
-        "build-server": "NODE_ENV=development webpack --config webpack.server.js",
+        "build-server": "webpack --config webpack.server.js",
         "run-server": "nodemon ./build-server/bundle.js",
-        "build-client": "NODE_ENV=development webpack --config webpack.client.js",
+        "build-client": "webpack --config webpack.client.js",
         "copy-sw-to-dist-folder": "cp serviceWorker.js dist",
         "clean-build-folders": "rm -rf ./build/ && rm -rf ./build-server/ && rm -rf ./dist/",
         "build": "react-scripts build",
@@ -867,13 +867,15 @@ const urlsToCache = ['/'];
 // eslint-disable-next-line no-restricted-globals
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
-  )
+    caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache)),
+  );
 });
 // eslint-disable-next-line no-restricted-globals
 self.addEventListener('fetch', event => {
   event.respondWith(
-    caches.match(event.request).then(response => response || fetch(event.request))
+    caches
+      .match(event.request)
+      .then(response => response || fetch(event.request)),
   );
 });
 ```
