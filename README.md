@@ -197,7 +197,7 @@ module.exports = {
     filename: 'bundle.js',
     path: path.resolve(__dirname, 'build-server'),
   },
-  externals: [webpackNodeExternals()],
+  externals: [webpackNodeExternals()], // excludes node modules in Webpack
   module: {
     rules: [
       {
