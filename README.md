@@ -184,8 +184,8 @@ Install dev dependencies:
 ```bash
  npm i webpack-cli nodemon webpack-node-externals --save-dev
  ```
- Add `webpack.config.js` to root of project.
- This is content of `webpack.config.js`:
+ Add `webpack.server.js` to root of project.
+ This is content of `webpack.server.js`:
  ```javascript
  const path = require('path');
 const webpackNodeExternals = require('webpack-node-externals');
@@ -323,6 +323,7 @@ In page source we can see rendered html inside `<div id="root"></div>`.
    </body>
 </html>
 ```
+SSR is integrated.
 Let`s go to code splitting.
 
 ## Code splitting.
@@ -580,6 +581,31 @@ module.exports = {
 };
 ```
 We have this entry point `./src/index.js`, output `./dist` folder. We customized `optimization.splitChunks` ( [more about splitChunks in Webpack 4](https://webpack.js.org/plugins/split-chunks-plugin/#optimizationsplitchunks) ) and added `ReactLoadableSSRAddon` ( [source](https://github.com/themgoncalves/react-loadable-ssr-addon) ) plugin for creating chunks scheme and `ExtractCssChunks` ( [source](https://github.com/faceyspacey/extract-css-chunks-webpack-plugin) ) plugin for handling css chunks.
+Also we need add `@babel/plugin-syntax-dynamic-import` and `react-loadable/babel` plugins for `babel-loader` to `webpack
+.server.js`:
+```javascript
+module: {
+  rules: [
+    {
+      test: /\.js$/,
+      exclude: /node_modules/,
+      use: {
+        loader: "babel-loader",
+        options: {
+          babelrc: false,
+          presets: ["@babel/preset-env", "@babel/preset-react"],
+          plugins: [
+            "@babel/plugin-syntax-dynamic-import",
+            "react-loadable/babel"
+          ]
+        }
+      }
+    }
+    // another rules
+  ];
+}
+```
+
 Let\`s add `react-loadable` to our app.
 `App.js`:
 ```javascript
@@ -722,6 +748,7 @@ server.use('/', (req, res) => {
   `);
 });
 
+// Loadable.preloadAll method returns a promise that will resolve when all your loadable components are ready.
 Loadable.preloadAll()
   .then(() => {
     server.listen(PORT, () => {
@@ -865,5 +892,4 @@ After (with SW):
 ![with sw](./screenshots/with_sw.jpg)
 
 We achieved our goals: added SSR to CRA, slitted code and integrated SW.
-You can find the repository with code from the guide this https://github
-.com/dzianisbohush/cra-with-ssr
+You can find the repository with code from the guide this https://github.com/dzianisbohush/cra-with-ssr
